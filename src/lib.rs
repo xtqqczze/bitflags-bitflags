@@ -862,7 +862,7 @@ macro_rules! __impl_bitflags {
 /// and each pattern. This allows for correct matching of bitflag combinations, which is not possible
 /// with a regular match expression due to the way bitflags are implemented.
 ///
-/// Patterns are evaluated in the order they appear in the macro.
+/// The input expression is evaluated once. Patterns are evaluated in the order they appear in the macro.
 #[macro_export]
 macro_rules! bitflags_match {
     ($operation:expr, {
@@ -871,7 +871,8 @@ macro_rules! bitflags_match {
         // Expand to a closure so we can use `return`
         // This makes it possible to apply attributes to the "match arms"
         (|| {
-            $crate::__bitflags_match!($operation, { $($t)* })
+            let _operation = &$operation;
+            $crate::__bitflags_match!(*_operation, { $($t)* })
         })()
     };
 }
