@@ -91,3 +91,63 @@ fn test_empty_and_full_flags() {
     assert_eq!(flag_to_string(Flags::empty()), "A and B | empty");
     assert_eq!(flag_to_string(Flags::all()), "All flags");
 }
+
+#[test]
+fn test_input_evaluated_once_for_later_arm() {
+    let mut calls = 0;
+    let result = bitflags_match!({
+        calls += 1;
+        Flags::C
+    }, {
+        Flags::A => "A",
+        Flags::B => { "B" }
+        Flags::C => "C",
+        _ => "other",
+    });
+
+    assert_eq!(result, "C");
+    assert_eq!(calls, 1);
+}
+
+#[test]
+fn test_input_evaluated_once_for_default_arm() {
+    let mut calls = 0;
+    let result = bitflags_match!({
+        calls += 1;
+        Flags::C
+    }, {
+        Flags::A => "A",
+        Flags::B => { "B" }
+        _ => "other",
+    });
+
+    assert_eq!(result, "other");
+    assert_eq!(calls, 1);
+}
+
+#[test]
+fn test_input_evaluated_once_with_only_default_arm() {
+    let mut calls = 0;
+    let result = bitflags_match!({
+        calls += 1;
+        Flags::C
+    }, {
+        _ => "other",
+    });
+
+    assert_eq!(result, "other");
+    assert_eq!(calls, 1);
+}
+
+#[test]
+fn test_input_is_not_moved() {
+    let flags = Flags::B;
+    let result = bitflags_match!(flags, {
+        Flags::A => "A",
+        Flags::B => "B",
+        _ => "other",
+    });
+
+    assert_eq!(result, "B");
+    assert!(flags == Flags::B);
+}
